@@ -32,7 +32,9 @@ This project builds into the **`docs/`** folder (`vite.config.js` → `build.out
 
 After you change the app, run `npm run build` again and **commit the updated `docs/`** folder so Pages picks up changes. For a working live board, build with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set (e.g. in a local `.env`); otherwise the board shows the “Connect Supabase” message but **hamster images still load**.
 
-Other hosts can upload the contents of **`docs/`** (or change `outDir` back to `dist` if you prefer).
+**If the site loads but hamsters and clicks do nothing:** GitHub Pages often serves `…/hamster-mood` without a trailing slash; relative asset URLs then break. This repo’s production build uses **`base: /hamster-mood/`** in `vite.config.js` so scripts and images load. If you **rename the GitHub repo**, update the `REPO_NAME` constant there to match.
+
+Other hosts can upload the contents of **`docs/`** (or change `outDir` and `base` if you prefer).
 
 ## Security note
 
