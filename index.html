@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hamster Mood — Digital Billboard</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="site-header">
+        <h1>Hamster Mood Billboard</h1>
+        <p class="tagline">Pick a reaction, add a note — everyone sees the board live.</p>
+        <div id="config-warning" class="config-warning hidden" role="status"></div>
+      </header>
+
+      <section class="picker-section" aria-labelledby="picker-heading">
+        <h2 id="picker-heading">Choose a reaction</h2>
+        <p class="hint">Click a hamster to post it to the billboard with your message.</p>
+        <div id="reaction-picker" class="reaction-picker"></div>
+      </section>
+
+      <section class="board-section" aria-labelledby="board-heading">
+        <h2 id="board-heading">The billboard</h2>
+        <p id="board-status" class="board-status" aria-live="polite"></p>
+        <div id="billboard" class="billboard"></div>
+      </section>
+    </div>
+
+    <!-- Compose: after picking reaction -->
+    <div id="compose-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="compose-title">
+      <div class="modal compose-modal">
+        <h3 id="compose-title">Add your message</h3>
+        <div class="compose-preview">
+          <img id="compose-preview-img" alt="" width="120" height="120" />
+        </div>
+        <label for="compose-text" class="sr-only">Message</label>
+        <textarea id="compose-text" rows="4" maxlength="500" placeholder="What’s on your mind?"></textarea>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="compose-cancel">Cancel</button>
+          <button type="button" class="btn primary" id="compose-post">Post to billboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post actions: delete or keep -->
+    <div id="post-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="post-action-title">
+      <div class="modal post-modal">
+        <h3 id="post-action-title">This post</h3>
+        <p class="post-modal-copy">Delete it from the board for everyone, or keep it.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="post-keep">Keep it</button>
+          <button type="button" class="btn danger" id="post-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
