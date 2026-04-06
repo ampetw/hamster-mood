@@ -1,13 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
 const REACTIONS = [
-  { id: "angry", src: "/hamsters/angry.png", label: "Intense" },
-  { id: "game", src: "/hamsters/game.png", label: "All a game" },
-  { id: "blush", src: "/hamsters/blush.png", label: "Blush smile" },
-  { id: "uh-oh", src: "/hamsters/uh-oh.png", label: "Uh oh" },
-  { id: "tired", src: "/hamsters/tired.png", label: "So tired" },
-  { id: "laughing", src: "/hamsters/laughing.png", label: "Laughing" },
+  { id: "laughing", src: "/hamsters/laughing.png", label: "Laughing with tears" },
   { id: "grin", src: "/hamsters/grin.png", label: "Big grin" },
+  { id: "tired", src: "/hamsters/tired.png", label: "Sad" },
+  { id: "angry", src: "/hamsters/angry.png", label: "Screaming" },
+  { id: "uh-oh", src: "/hamsters/uh-oh.png", label: "Tongue out" },
+  { id: "game", src: "/hamsters/game.png", label: "Distressed" },
+  { id: "blush", src: "/hamsters/blush.png", label: "Blushing" },
 ];
 
 const url = import.meta.env.VITE_SUPABASE_URL;
@@ -17,17 +17,17 @@ const supabase = url && key ? createClient(url, key) : null;
 
 let selectedImageId = null;
 let selectedPostId = null;
+let pickerButtons = [];
 
 const els = {
   picker: document.getElementById("reaction-picker"),
   billboard: document.getElementById("billboard"),
   boardStatus: document.getElementById("board-status"),
   configWarning: document.getElementById("config-warning"),
-  composeOverlay: document.getElementById("compose-overlay"),
-  composePreviewImg: document.getElementById("compose-preview-img"),
-  composeText: document.getElementById("compose-text"),
-  composeCancel: document.getElementById("compose-cancel"),
-  composePost: document.getElementById("compose-post"),
+  mainPreviewImg: document.getElementById("main-preview-img"),
+  previewPlaceholder: document.getElementById("preview-placeholder"),
+  messageText: document.getElementById("message-text"),
+  btnPost: document.getElementById("btn-post"),
   postOverlay: document.getElementById("post-overlay"),
   postKeep: document.getElementById("post-keep"),
   postDelete: document.getElementById("post-delete"),
@@ -51,40 +51,49 @@ function showConfigWarning() {
     "<strong>Connect Supabase</strong> so posts sync for everyone. Copy <code>.env.example</code> to <code>.env</code> and add your project URL and anon key. See README for the one-time database setup.";
 }
 
+function updatePreview() {
+  const r = selectedImageId ? reactionById(selectedImageId) : null;
+  if (!r) {
+    els.mainPreviewImg.classList.add("hidden");
+    els.previewPlaceholder.classList.remove("hidden");
+    els.mainPreviewImg.removeAttribute("src");
+    return;
+  }
+  els.previewPlaceholder.classList.add("hidden");
+  els.mainPreviewImg.classList.remove("hidden");
+  els.mainPreviewImg.src = r.src;
+  els.mainPreviewImg.alt = r.label;
+}
+
+function setPickerSelection(imageId) {
+  for (const btn of pickerButtons) {
+    btn.classList.toggle("is-selected", btn.dataset.imageId === imageId);
+  }
+}
+
+function selectReaction(imageId) {
+  selectedImageId = imageId;
+  setPickerSelection(imageId);
+  updatePreview();
+}
+
 function renderPicker() {
   els.picker.innerHTML = "";
+  pickerButtons = [];
   for (const r of REACTIONS) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "reaction-btn";
-    btn.setAttribute("aria-label", `Post reaction: ${r.label}`);
+    btn.setAttribute("aria-label", `Select reaction: ${r.label}`);
     btn.dataset.imageId = r.id;
     const img = document.createElement("img");
     img.src = r.src;
     img.alt = r.label;
     btn.appendChild(img);
-    btn.addEventListener("click", () => openCompose(r.id));
+    btn.addEventListener("click", () => selectReaction(r.id));
     els.picker.appendChild(btn);
+    pickerButtons.push(btn);
   }
-}
-
-function openCompose(imageId) {
-  if (!supabase) {
-    showConfigWarning();
-    return;
-  }
-  selectedImageId = imageId;
-  const r = reactionById(imageId);
-  els.composePreviewImg.src = r.src;
-  els.composePreviewImg.alt = r.label;
-  els.composeText.value = "";
-  els.composeOverlay.classList.remove("hidden");
-  els.composeText.focus();
-}
-
-function closeCompose() {
-  els.composeOverlay.classList.add("hidden");
-  selectedImageId = null;
 }
 
 function openPostActions(postId) {
@@ -100,21 +109,28 @@ function closePostActions() {
 }
 
 async function submitPost() {
-  if (!supabase || !selectedImageId) return;
-  const content = els.composeText.value.trim();
-  els.composePost.disabled = true;
+  if (!supabase) {
+    showConfigWarning();
+    return;
+  }
+  if (!selectedImageId) {
+    els.boardStatus.textContent = "Pick a hamster first.";
+    return;
+  }
+  const content = els.messageText.value.trim();
+  els.btnPost.disabled = true;
   els.boardStatus.textContent = "Posting…";
   const { error } = await supabase.from("billboard_posts").insert({
     image_id: selectedImageId,
     content,
   });
-  els.composePost.disabled = false;
+  els.btnPost.disabled = false;
   if (error) {
     els.boardStatus.textContent = `Could not post: ${error.message}`;
     return;
   }
   els.boardStatus.textContent = "Posted.";
-  closeCompose();
+  els.messageText.value = "";
   await loadPosts();
 }
 
@@ -137,7 +153,7 @@ function renderPosts(rows) {
   if (!rows.length) {
     const p = document.createElement("p");
     p.className = "empty-board";
-    p.textContent = "No posts yet — be the first hamster on the board.";
+    p.textContent = "No posts yet — be the first on the board.";
     els.billboard.appendChild(p);
     return;
   }
@@ -181,7 +197,7 @@ async function loadPosts() {
     els.boardStatus.textContent = `Could not load: ${error.message}`;
     return;
   }
-  els.boardStatus.textContent = `${data.length} post${data.length === 1 ? "" : "s"} on the board`;
+  els.boardStatus.textContent = `${data.length} post${data.length === 1 ? "" : "s"}`;
   renderPosts(data);
 }
 
@@ -204,11 +220,7 @@ function subscribeRealtime() {
   };
 }
 
-els.composeCancel.addEventListener("click", closeCompose);
-els.composePost.addEventListener("click", submitPost);
-els.composeOverlay.addEventListener("click", (e) => {
-  if (e.target === els.composeOverlay) closeCompose();
-});
+els.btnPost.addEventListener("click", submitPost);
 els.postKeep.addEventListener("click", closePostActions);
 els.postDelete.addEventListener("click", deleteSelectedPost);
 els.postOverlay.addEventListener("click", (e) => {
@@ -216,17 +228,16 @@ els.postOverlay.addEventListener("click", (e) => {
 });
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeCompose();
-    closePostActions();
-  }
+  if (e.key === "Escape") closePostActions();
 });
 
 renderPicker();
+updatePreview();
 
 if (!supabase) {
   showConfigWarning();
-  els.boardStatus.textContent = "Board is offline until Supabase is configured.";
+  els.boardStatus.textContent = "Board offline — add Supabase in .env";
+  els.btnPost.disabled = true;
 } else {
   loadPosts();
   subscribeRealtime();

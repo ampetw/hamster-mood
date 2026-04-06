@@ -4,49 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hamster Mood — Digital Billboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <div id="app">
-      <header class="site-header">
-        <h1>Hamster Mood Billboard</h1>
-        <p class="tagline">Pick a reaction, add a note — everyone sees the board live.</p>
+    <div class="layout">
+      <aside class="sidebar" aria-label="Pick your mood">
         <div id="config-warning" class="config-warning hidden" role="status"></div>
-      </header>
+        <h1 class="sidebar-title">How do you feel right now?</h1>
+        <div id="reaction-picker" class="reaction-grid"></div>
+        <label for="message-text" class="sidebar-label">Your message</label>
+        <textarea
+          id="message-text"
+          class="sidebar-textarea"
+          rows="4"
+          maxlength="500"
+          placeholder="Type something for the board…"
+        ></textarea>
+        <div class="sidebar-footer">
+          <button type="button" class="btn-post" id="btn-post">POST</button>
+        </div>
+      </aside>
 
-      <section class="picker-section" aria-labelledby="picker-heading">
-        <h2 id="picker-heading">Choose a reaction</h2>
-        <p class="hint">Click a hamster to post it to the billboard with your message.</p>
-        <div id="reaction-picker" class="reaction-picker"></div>
-      </section>
-
-      <section class="board-section" aria-labelledby="board-heading">
-        <h2 id="board-heading">The billboard</h2>
-        <p id="board-status" class="board-status" aria-live="polite"></p>
-        <div id="billboard" class="billboard"></div>
-      </section>
+      <main class="main-panel">
+        <div class="preview-stage" aria-live="polite">
+          <p id="preview-placeholder" class="preview-placeholder">Pick a hamster</p>
+          <img id="main-preview-img" class="main-preview-img hidden" alt="" width="280" height="280" />
+        </div>
+        <section class="feed-section" aria-labelledby="feed-heading">
+          <h2 id="feed-heading" class="feed-heading">Billboard</h2>
+          <p id="board-status" class="board-status"></p>
+          <div id="billboard" class="billboard"></div>
+        </section>
+      </main>
     </div>
 
-    <!-- Compose: after picking reaction -->
-    <div id="compose-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="compose-title">
-      <div class="modal compose-modal">
-        <h3 id="compose-title">Add your message</h3>
-        <div class="compose-preview">
-          <img id="compose-preview-img" alt="" width="120" height="120" />
-        </div>
-        <label for="compose-text" class="sr-only">Message</label>
-        <textarea id="compose-text" rows="4" maxlength="500" placeholder="What’s on your mind?"></textarea>
-        <div class="modal-actions">
-          <button type="button" class="btn secondary" id="compose-cancel">Cancel</button>
-          <button type="button" class="btn primary" id="compose-post">Post to billboard</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Post actions: delete or keep -->
     <div id="post-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="post-action-title">
       <div class="modal post-modal">
-        <h3 id="post-action-title">This post</h3>
+        <h3 id="post-action-title" class="modal-title-pixel">This post</h3>
         <p class="post-modal-copy">Delete it from the board for everyone, or keep it.</p>
         <div class="modal-actions">
           <button type="button" class="btn secondary" id="post-keep">Keep it</button>
