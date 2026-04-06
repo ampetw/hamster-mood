@@ -15,10 +15,7 @@ const REACTIONS = [
   { id: "blush", file: "blush.png", label: "Blushing" },
 ].map(({ file, ...r }) => ({ ...r, src: publicUrl(`hamsters/${file}`) }));
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const supabase = url && key ? createClient(url, key) : null;
+let supabase = null;
 
 let selectedImageId = null;
 let selectedPostId = null;
@@ -53,7 +50,37 @@ function formatDate(iso) {
 function showConfigWarning() {
   els.configWarning.classList.remove("hidden");
   els.configWarning.innerHTML =
-    "<strong>Connect Supabase</strong> so posts sync for everyone. Copy <code>.env.example</code> to <code>.env</code> and add your project URL and anon key. See README for the one-time database setup.";
+    "<strong>Connect Supabase</strong> so posts sync for everyone. Add your keys to <code>docs/runtime-config.json</code> on GitHub Pages (or use a local <code>.env</code>). See README.";
+}
+
+async function loadRuntimeConfig() {
+  const url = publicUrl("runtime-config.json");
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (!json || typeof json !== "object") return null;
+    return {
+      supabaseUrl: typeof json.supabaseUrl === "string" ? json.supabaseUrl.trim() : "",
+      supabaseAnonKey: typeof json.supabaseAnonKey === "string" ? json.supabaseAnonKey.trim() : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function initSupabase() {
+  const envUrl = (import.meta.env.VITE_SUPABASE_URL || "").trim();
+  const envKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || "").trim();
+  if (envUrl && envKey) {
+    supabase = createClient(envUrl, envKey);
+    return;
+  }
+
+  const cfg = await loadRuntimeConfig();
+  if (cfg?.supabaseUrl && cfg?.supabaseAnonKey) {
+    supabase = createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+  }
 }
 
 function updatePreview() {
@@ -242,11 +269,21 @@ document.addEventListener("keydown", (e) => {
 renderPicker();
 updatePreview();
 
-if (!supabase) {
-  showConfigWarning();
-  els.boardStatus.textContent = "Board offline — add Supabase in .env";
-  els.btnPost.disabled = true;
-} else {
+els.btnPost.disabled = true;
+els.boardStatus.textContent = "Loading…";
+
+(async () => {
+  await initSupabase();
+
+  if (!supabase) {
+    showConfigWarning();
+    els.boardStatus.textContent = "Posting is offline until Supabase is configured.";
+    els.btnPost.disabled = true;
+    return;
+  }
+
+  els.configWarning.classList.add("hidden");
+  els.btnPost.disabled = false;
   loadPosts();
   subscribeRealtime();
-}
+})();

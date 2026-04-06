@@ -30,7 +30,21 @@ This project builds into the **`docs/`** folder (`vite.config.js` → `build.out
 
 **GitHub Pages:** In the repo on GitHub, go to **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose **`main`**, folder **`/docs`**, then save. The site URL will look like `https://<user>.github.io/hamster-mood/`.
 
-After you change the app, run `npm run build` again and **commit the updated `docs/`** folder so Pages picks up changes. For a working live board, build with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set (e.g. in a local `.env`); otherwise the board shows the “Connect Supabase” message but **hamster images still load**.
+After you change the app, run `npm run build` again and **commit the updated `docs/`** folder so Pages picks up changes.
+
+### Make POST work on GitHub Pages (no secrets needed)
+
+GitHub Pages can’t provide Vite build-time env vars, so the deployed site reads Supabase keys from a file.
+
+1. In your GitHub repo, edit **`docs/runtime-config.json`** and set:
+   - `supabaseUrl`
+   - `supabaseAnonKey` (the public anon key)
+
+2. Commit the change on GitHub.
+
+The site will then enable **POST** and everyone will see updates.
+
+Local dev can still use `.env` (`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`).
 
 **If the site loads but hamsters and clicks do nothing:** GitHub Pages often serves `…/hamster-mood` without a trailing slash; relative asset URLs then break. This repo’s production build uses **`base: /hamster-mood/`** in `vite.config.js` so scripts and images load. If you **rename the GitHub repo**, update the `REPO_NAME` constant there to match.
 
