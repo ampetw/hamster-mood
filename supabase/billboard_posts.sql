@@ -1,0 +1,22 @@
+-- Run in Supabase: SQL Editor → New query → paste → Run
+
+create table if not exists public.billboard_posts (
+  id uuid primary key default gen_random_uuid(),
+  image_id text not null,
+  content text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.billboard_posts enable row level security;
+
+create policy "billboard_select" on public.billboard_posts
+  for select using (true);
+
+create policy "billboard_insert" on public.billboard_posts
+  for insert with check (true);
+
+create policy "billboard_delete" on public.billboard_posts
+  for delete using (true);
+
+-- Live updates for all visitors (run once; ignore error if already added):
+alter publication supabase_realtime add table public.billboard_posts;
