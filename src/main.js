@@ -23,13 +23,9 @@ let pickerButtons = [];
 
 const els = {
   picker: document.getElementById("reaction-picker"),
-  billboard: document.getElementById("billboard"),
+  board: document.getElementById("board"),
   boardStatus: document.getElementById("board-status"),
   configWarning: document.getElementById("config-warning"),
-  mainPreviewImg: document.getElementById("main-preview-img"),
-  previewPlaceholder: document.getElementById("preview-placeholder"),
-  messageText: document.getElementById("message-text"),
-  btnPost: document.getElementById("btn-post"),
   postOverlay: document.getElementById("post-overlay"),
   postKeep: document.getElementById("post-keep"),
   postDelete: document.getElementById("post-delete"),
@@ -83,18 +79,14 @@ async function initSupabase() {
   }
 }
 
-function updatePreview() {
-  const r = selectedImageId ? reactionById(selectedImageId) : null;
-  if (!r) {
-    els.mainPreviewImg.classList.add("hidden");
-    els.previewPlaceholder.classList.remove("hidden");
-    els.mainPreviewImg.removeAttribute("src");
-    return;
-  }
-  els.previewPlaceholder.classList.add("hidden");
-  els.mainPreviewImg.classList.remove("hidden");
-  els.mainPreviewImg.src = r.src;
-  els.mainPreviewImg.alt = r.label;
+function boardRelativePointFromEvent(evt) {
+  const rect = els.board.getBoundingClientRect();
+  const x = (evt.clientX - rect.left) / rect.width;
+  const y = (evt.clientY - rect.top) / rect.height;
+  return {
+    x: Math.min(0.99, Math.max(0.01, x)),
+    y: Math.min(0.99, Math.max(0.01, y)),
+  };
 }
 
 function setPickerSelection(imageId) {
@@ -108,7 +100,6 @@ function setPickerSelection(imageId) {
 function selectReaction(imageId) {
   selectedImageId = imageId;
   setPickerSelection(imageId);
-  updatePreview();
 }
 
 function renderPicker() {
@@ -152,21 +143,31 @@ async function submitPost() {
     els.boardStatus.textContent = "Pick a hamster first.";
     return;
   }
-  const content = els.messageText.value.trim();
-  els.btnPost.disabled = true;
-  els.boardStatus.textContent = "Posting…";
-  const { error } = await supabase.from("billboard_posts").insert({
-    image_id: selectedImageId,
-    content,
-  });
-  els.btnPost.disabled = false;
-  if (error) {
-    els.boardStatus.textContent = `Could not post: ${error.message}`;
+  els.boardStatus.textContent = "Click the board to place it.";
+}
+
+async function placeStamp(evt) {
+  if (!supabase) {
+    showConfigWarning();
     return;
   }
-  els.boardStatus.textContent = "Posted.";
-  els.messageText.value = "";
-  await loadPosts();
+  if (!selectedImageId) {
+    els.boardStatus.textContent = "Pick a hamster first.";
+    return;
+  }
+
+  const { x, y } = boardRelativePointFromEvent(evt);
+  els.boardStatus.textContent = "Stamping…";
+  const { error } = await supabase.from("billboard_posts").insert({
+    image_id: selectedImageId,
+    x,
+    y,
+  });
+  if (error) {
+    els.boardStatus.textContent = `Could not stamp: ${error.message}`;
+    return;
+  }
+  els.boardStatus.textContent = "Stamped.";
 }
 
 async function deleteSelectedPost() {
@@ -183,57 +184,56 @@ async function deleteSelectedPost() {
   await loadPosts();
 }
 
-function renderPosts(rows) {
-  els.billboard.innerHTML = "";
-  if (!rows.length) {
-    const p = document.createElement("p");
-    p.className = "empty-board";
-    p.textContent = "No posts yet — be the first on the board.";
-    els.billboard.appendChild(p);
-    return;
-  }
+function renderStamps(rows) {
+  els.board.innerHTML = "";
+
   for (const row of rows) {
     const r = reactionById(row.image_id);
     if (!r) continue;
-    const card = document.createElement("article");
-    card.className = "billboard-card";
-    card.tabIndex = 0;
-    card.dataset.postId = row.id;
+
+    const wrap = document.createElement("div");
+    wrap.className = "stamp";
+    wrap.style.left = `${Math.round((row.x ?? 0.5) * 10000) / 100}%`;
+    wrap.style.top = `${Math.round((row.y ?? 0.5) * 10000) / 100}%`;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.setAttribute("aria-label", `Stamp: ${r.label} at ${formatDate(row.created_at)}`);
+    btn.dataset.postId = row.id;
+
     const img = document.createElement("img");
     img.src = r.src;
     img.alt = r.label;
-    const textEl = document.createElement("p");
-    textEl.className = "card-text";
-    textEl.textContent = row.content || "(no message)";
-    const dateEl = document.createElement("p");
-    dateEl.className = "card-date";
+
+    const dateEl = document.createElement("div");
+    dateEl.className = "stamp-date";
     dateEl.textContent = formatDate(row.created_at);
-    card.append(img, textEl, dateEl);
-    const open = () => openPostActions(row.id);
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        open();
-      }
+
+    btn.appendChild(img);
+    wrap.append(btn, dateEl);
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      openPostActions(row.id);
     });
-    els.billboard.appendChild(card);
+
+    els.board.appendChild(wrap);
   }
 }
 
 async function loadPosts() {
   if (!supabase) return;
-  els.boardStatus.textContent = "Loading…";
+  els.boardStatus.textContent = "Loading board…";
   const { data, error } = await supabase
     .from("billboard_posts")
-    .select("id, image_id, content, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, image_id, x, y, created_at")
+    .order("created_at", { ascending: true });
   if (error) {
     els.boardStatus.textContent = `Could not load: ${error.message}`;
     return;
   }
-  els.boardStatus.textContent = `${data.length} post${data.length === 1 ? "" : "s"}`;
-  renderPosts(data);
+  els.boardStatus.textContent = `${data.length} stamp${data.length === 1 ? "" : "s"} — click to stamp, click a stamp to delete`;
+  renderStamps(data);
 }
 
 function subscribeRealtime() {
@@ -255,7 +255,6 @@ function subscribeRealtime() {
   };
 }
 
-els.btnPost.addEventListener("click", submitPost);
 els.postKeep.addEventListener("click", closePostActions);
 els.postDelete.addEventListener("click", deleteSelectedPost);
 els.postOverlay.addEventListener("click", (e) => {
@@ -267,9 +266,8 @@ document.addEventListener("keydown", (e) => {
 });
 
 renderPicker();
-updatePreview();
+els.board.addEventListener("click", placeStamp);
 
-els.btnPost.disabled = true;
 els.boardStatus.textContent = "Loading…";
 
 (async () => {
@@ -277,13 +275,12 @@ els.boardStatus.textContent = "Loading…";
 
   if (!supabase) {
     showConfigWarning();
-    els.boardStatus.textContent = "Posting is offline until Supabase is configured.";
-    els.btnPost.disabled = true;
+    els.boardStatus.textContent = "Board is offline until Supabase is configured.";
     return;
   }
 
   els.configWarning.classList.add("hidden");
-  els.btnPost.disabled = false;
+  els.boardStatus.textContent = "Pick a hamster, then click the board to stamp it.";
   loadPosts();
   subscribeRealtime();
 })();

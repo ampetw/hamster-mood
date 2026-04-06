@@ -10,8 +10,8 @@
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/hamster-mood/assets/index-C9mDqrar.js"></script>
-    <link rel="stylesheet" crossorigin href="/hamster-mood/assets/index-BQLY-mt7.css">
+    <script type="module" crossorigin src="/hamster-mood/assets/index-B_foumDr.js"></script>
+    <link rel="stylesheet" crossorigin href="/hamster-mood/assets/index-BZGsFL64.css">
   </head>
   <body>
     <div class="layout">
@@ -22,28 +22,15 @@
           <span class="sidebar-title-line">right now?</span>
         </h1>
         <div id="reaction-picker" class="reaction-grid"></div>
-        <label for="message-text" class="sidebar-label">Your message</label>
-        <textarea
-          id="message-text"
-          class="sidebar-textarea"
-          rows="4"
-          maxlength="500"
-          placeholder="Type something for the board…"
-        ></textarea>
         <div class="sidebar-footer">
-          <button type="button" class="btn-post" id="btn-post">POST</button>
+          <div class="sidebar-hint" id="sidebar-hint">Pick a hamster, then click the board to stamp it.</div>
         </div>
       </aside>
 
       <main class="main-panel">
-        <div class="preview-stage" aria-live="polite">
-          <p id="preview-placeholder" class="preview-placeholder">Pick a hamster</p>
-          <img id="main-preview-img" class="main-preview-img hidden" alt="" width="280" height="280" />
-        </div>
-        <section class="feed-section" aria-labelledby="feed-heading">
-          <h2 id="feed-heading" class="feed-heading">Billboard</h2>
-          <p id="board-status" class="board-status"></p>
-          <div id="billboard" class="billboard"></div>
+        <section class="board-wrap" aria-label="Shared hamster board">
+          <p id="board-status" class="board-status board-status-overlay"></p>
+          <div id="board" class="board" role="application" aria-label="Click to place the selected hamster"></div>
         </section>
       </main>
     </div>

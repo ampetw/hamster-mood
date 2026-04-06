@@ -3,9 +3,14 @@
 create table if not exists public.billboard_posts (
   id uuid primary key default gen_random_uuid(),
   image_id text not null,
-  content text not null default '',
+  x double precision not null default 0.5,
+  y double precision not null default 0.5,
   created_at timestamptz not null default now()
 );
+
+-- If you already created the table earlier, add the new columns:
+alter table public.billboard_posts add column if not exists x double precision not null default 0.5;
+alter table public.billboard_posts add column if not exists y double precision not null default 0.5;
 
 alter table public.billboard_posts enable row level security;
 

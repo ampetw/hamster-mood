@@ -167,30 +167,13 @@ body {
   justify-content: flex-end;
 }
 
-.btn-post {
+.sidebar-hint {
   font-family: var(--pixel-font);
-  font-size: 0.52rem;
-  line-height: 1.5;
-  padding: 0.75rem 1.1rem;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  background: var(--post-btn-bg);
-  color: var(--post-btn-text);
-  cursor: pointer;
-  transition: filter 0.1s ease, transform 0.08s ease;
-}
-
-.btn-post:hover:not(:disabled) {
-  filter: brightness(0.97);
-}
-
-.btn-post:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.btn-post:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  font-size: 0.36rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: right;
+  max-width: 18rem;
 }
 
 .main-panel {
@@ -202,48 +185,6 @@ body {
   overflow: auto;
 }
 
-.preview-stage {
-  flex: 0 0 auto;
-  min-height: 38vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 1.25rem 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.preview-placeholder {
-  margin: 0;
-  font-family: var(--pixel-font);
-  font-size: clamp(0.36rem, 1.8vw, 0.5rem);
-  color: var(--hot-pink-dark);
-  opacity: 0.75;
-  text-align: center;
-  line-height: 2;
-}
-
-.main-preview-img {
-  width: min(70vw, 300px);
-  height: min(70vw, 300px);
-  object-fit: contain;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-}
-
-.feed-section {
-  flex: 1;
-  padding: 0.85rem 1rem 1.75rem;
-}
-
-.feed-heading {
-  margin: 0 0 0.3rem;
-  font-family: var(--pixel-font);
-  font-size: 0.45rem;
-  color: var(--hot-pink-dark);
-  font-weight: 400;
-}
-
 .board-status {
   min-height: 1.4rem;
   margin: 0 0 0.55rem;
@@ -251,61 +192,73 @@ body {
   color: rgba(0, 0, 0, 0.55);
 }
 
-.billboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.65rem;
+.board-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
-.billboard-card {
-  background: var(--card);
-  border: 1px solid var(--black);
-  border-radius: 0;
-  padding: 0.45rem;
-  cursor: pointer;
-  text-align: center;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+.board-status-overlay {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0;
+  padding: 0.65rem 1rem;
+  font-family: var(--pixel-font);
+  font-size: 0.4rem;
+  line-height: 1.8;
+  color: rgba(0, 0, 0, 0.55);
+  background: rgba(248, 187, 208, 0.9);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.billboard-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 0 rgba(233, 30, 99, 0.2);
-}
-
-.billboard-card:focus-visible {
-  outline: 2px solid var(--hot-pink);
-  outline-offset: 2px;
-}
-
-.billboard-card img {
+.board {
+  position: relative;
   width: 100%;
-  max-height: 96px;
+  height: calc(100vh - 2.5rem);
+  height: calc(100dvh - 2.5rem);
+  overflow: hidden;
+  cursor: crosshair;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+
+.stamp {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.stamp button {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.stamp img {
+  width: 96px;
+  height: 96px;
   object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  filter: drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.15));
 }
 
-.billboard-card .card-text {
-  margin: 0.35rem 0 0.2rem;
-  font-size: 1rem;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-.billboard-card .card-date {
-  margin: 0;
-  font-family: var(--pixel-font);
-  font-size: 0.32rem;
-  line-height: 1.65;
-  color: #880e4f;
-}
-
-.empty-board {
-  grid-column: 1 / -1;
+.stamp .stamp-date {
+  margin-top: 2px;
   text-align: center;
-  padding: 1.25rem;
-  font-size: 1.1rem;
-  opacity: 0.7;
+  font-family: var(--pixel-font);
+  font-size: 0.28rem;
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
 }
 
 .overlay {
@@ -388,7 +341,8 @@ body {
     margin: 0 auto;
   }
 
-  .preview-stage {
-    min-height: 32vh;
+  .board {
+    height: 70vh;
+    height: 70dvh;
   }
 }

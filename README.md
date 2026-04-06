@@ -1,12 +1,12 @@
-# Hamster Mood — Digital Billboard
+# Hamster Mood — Shared Hamster Board
 
-A pink-themed **shared billboard**: visitors pick a hamster reaction, write a short message, and everyone sees posts in near real time. Click a post on the board to **keep** it or **delete** it for all users.
+A pink-themed **shared board** (like a tiny FigJam): visitors pick a hamster reaction and **stamp it onto the board**. Everyone sees stamps update in near real time. Click a stamp to **keep** it or **delete** it for all users.
 
 ## Run locally
 
 1. **Create a Supabase project** (free): [supabase.com](https://supabase.com)
 
-2. **Database**: In the Supabase dashboard, open **SQL Editor**, paste the contents of [`supabase/billboard_posts.sql`](supabase/billboard_posts.sql), and run it. That creates the `billboard_posts` table, open read/write/delete policies for this demo, and registers the table for Realtime.
+2. **Database**: In the Supabase dashboard, open **SQL Editor**, paste the contents of [`supabase/billboard_posts.sql`](supabase/billboard_posts.sql), and run it. That creates the `billboard_posts` table (with `x`/`y` stamp positions), open read/write/delete policies for this demo, and registers the table for Realtime.
 
 3. **API keys**: Project **Settings → API**. Copy the project URL and the `anon` `public` key.
 
