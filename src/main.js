@@ -1,14 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 
+function publicUrl(path) {
+  const p = path.startsWith("/") ? path.slice(1) : path;
+  return `${import.meta.env.BASE_URL}${p}`;
+}
+
 const REACTIONS = [
-  { id: "laughing", src: "/hamsters/laughing.png", label: "Laughing with tears" },
-  { id: "grin", src: "/hamsters/grin.png", label: "Big grin" },
-  { id: "tired", src: "/hamsters/tired.png", label: "Sad" },
-  { id: "angry", src: "/hamsters/angry.png", label: "Screaming" },
-  { id: "uh-oh", src: "/hamsters/uh-oh.png", label: "Tongue out" },
-  { id: "game", src: "/hamsters/game.png", label: "Distressed" },
-  { id: "blush", src: "/hamsters/blush.png", label: "Blushing" },
-];
+  { id: "laughing", file: "laughing.png", label: "Laughing with tears" },
+  { id: "grin", file: "grin.png", label: "Big grin" },
+  { id: "tired", file: "tired.png", label: "Sad" },
+  { id: "angry", file: "angry.png", label: "Screaming" },
+  { id: "uh-oh", file: "uh-oh.png", label: "Tongue out" },
+  { id: "game", file: "game.png", label: "Distressed" },
+  { id: "blush", file: "blush.png", label: "Blushing" },
+].map(({ file, ...r }) => ({ ...r, src: publicUrl(`hamsters/${file}`) }));
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
