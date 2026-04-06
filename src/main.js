@@ -72,7 +72,9 @@ function updatePreview() {
 
 function setPickerSelection(imageId) {
   for (const btn of pickerButtons) {
-    btn.classList.toggle("is-selected", btn.dataset.imageId === imageId);
+    const isSelected = btn.dataset.imageId === imageId;
+    btn.classList.toggle("is-selected", isSelected);
+    btn.setAttribute("aria-pressed", String(isSelected));
   }
 }
 
@@ -90,6 +92,7 @@ function renderPicker() {
     btn.type = "button";
     btn.className = "reaction-btn";
     btn.setAttribute("aria-label", `Select reaction: ${r.label}`);
+    btn.setAttribute("aria-pressed", "false");
     btn.dataset.imageId = r.id;
     const img = document.createElement("img");
     img.src = r.src;
