@@ -10,13 +10,16 @@
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/src/style.css" />
+    <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
     <div class="layout">
       <aside class="sidebar" aria-label="Pick your mood">
         <div id="config-warning" class="config-warning hidden" role="status"></div>
-        <h1 class="sidebar-title">How do you feel right now?</h1>
+        <h1 class="sidebar-title">
+          <span class="sidebar-title-line">How do you feel</span>
+          <span class="sidebar-title-line">right now?</span>
+        </h1>
         <div id="reaction-picker" class="reaction-grid"></div>
         <label for="message-text" class="sidebar-label">Your message</label>
         <textarea
@@ -55,6 +58,6 @@
       </div>
     </div>
 
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
