@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hamster Mood — Digital Billboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="./assets/index-NL4lBvYP.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bv_59cez.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" aria-label="Pick your mood">
+        <div id="config-warning" class="config-warning hidden" role="status"></div>
+        <h1 class="sidebar-title">
+          <span class="sidebar-title-line">How do you feel</span>
+          <span class="sidebar-title-line">right now?</span>
+        </h1>
+        <div id="reaction-picker" class="reaction-grid"></div>
+        <label for="message-text" class="sidebar-label">Your message</label>
+        <textarea
+          id="message-text"
+          class="sidebar-textarea"
+          rows="4"
+          maxlength="500"
+          placeholder="Type something for the board…"
+        ></textarea>
+        <div class="sidebar-footer">
+          <button type="button" class="btn-post" id="btn-post">POST</button>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <div class="preview-stage" aria-live="polite">
+          <p id="preview-placeholder" class="preview-placeholder">Pick a hamster</p>
+          <img id="main-preview-img" class="main-preview-img hidden" alt="" width="280" height="280" />
+        </div>
+        <section class="feed-section" aria-labelledby="feed-heading">
+          <h2 id="feed-heading" class="feed-heading">Billboard</h2>
+          <p id="board-status" class="board-status"></p>
+          <div id="billboard" class="billboard"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="post-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="post-action-title">
+      <div class="modal post-modal">
+        <h3 id="post-action-title" class="modal-title-pixel">This post</h3>
+        <p class="post-modal-copy">Delete it from the board for everyone, or keep it.</p>
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="post-keep">Keep it</button>
+          <button type="button" class="btn danger" id="post-delete">Delete</button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

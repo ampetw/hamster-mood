@@ -26,7 +26,13 @@ A pink-themed **shared billboard**: visitors pick a hamster reaction, write a sh
 
 ## Deploy
 
-Build static files with `npm run build` and host the `dist` folder on any static host (Netlify, Vercel, GitHub Pages, etc.). Set the same `VITE_*` variables in the host’s environment at build time.
+This project builds into the **`docs/`** folder (`vite.config.js` → `build.outDir`).
+
+**GitHub Pages:** In the repo on GitHub, go to **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose **`main`**, folder **`/docs`**, then save. The site URL will look like `https://<user>.github.io/hamster-mood/`.
+
+After you change the app, run `npm run build` again and **commit the updated `docs/`** folder so Pages picks up changes. For a working live board, build with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` set (e.g. in a local `.env`); otherwise the board shows the “Connect Supabase” message but **hamster images still load**.
+
+Other hosts can upload the contents of **`docs/`** (or change `outDir` back to `dist` if you prefer).
 
 ## Security note
 
