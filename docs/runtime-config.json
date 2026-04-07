@@ -2,3 +2,8 @@
   "supabaseUrl": "PASTE_PROJECT_URL_HERE",
   "supabaseAnonKey": "PASTE_ANON_PUBLIC_KEY_HERE"
 }
+
+{
+  "supabaseUrl": "https://YOUR-PROJECT.supabase.co",
+  "supabaseAnonKey": "YOUR_ANON_PUBLIC_KEY"
+}
