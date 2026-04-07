@@ -20,6 +20,20 @@ function showConfigWarning() {
     "<strong>Connect Supabase</strong> so posts sync for everyone. Add your keys to <code>docs/runtime-config.json</code> on GitHub Pages (or use a local <code>.env</code>).";
 }
 
+function showPostError(message) {
+  els.configWarning.classList.remove("hidden");
+  els.configWarning.innerHTML = `<strong>Could not post</strong><br />${message}`;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function setPickerSelection(imageId) {
   for (const btn of pickerButtons) {
     const isSelected = btn.dataset.imageId === imageId;
@@ -83,7 +97,15 @@ async function submitPost() {
     content,
   });
   els.btnPost.disabled = false;
-  if (error) return;
+  if (error) {
+    const msg = escapeHtml(error.message || "Unknown error");
+    const hint =
+      /row level security|rls/i.test(error.message || "") ?
+        "<br /><br />This usually means Row Level Security is blocking inserts. In Supabase, add an INSERT policy for the <code>billboard_posts</code> table (or disable RLS for testing)." :
+        "";
+    showPostError(`${msg}${hint}`);
+    return;
+  }
 
   els.feelInput.value = "";
   window.location.href = `${import.meta.env.BASE_URL}billboard.html`;
