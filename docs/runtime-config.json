@@ -1,8 +1,4 @@
 {
-  "supabaseUrl": "",
-  "supabaseAnonKey": ""
-}
-{
   "supabaseUrl": "PASTE_PROJECT_URL_HERE",
   "supabaseAnonKey": "PASTE_ANON_PUBLIC_KEY_HERE"
 }
