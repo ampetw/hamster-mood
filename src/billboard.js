@@ -62,9 +62,18 @@ function renderFeed(rows) {
     return;
   }
 
+  const normalizeImageId = (imageId) => {
+    if (typeof imageId !== "string") return "";
+    const s = imageId.trim();
+    if (!s) return "";
+    // Handle older/alternate formats that might store filenames.
+    if (s.toLowerCase().endsWith(".png")) return s.slice(0, -4);
+    return s;
+  };
+
   for (const row of rows) {
-    const r = reactionById(row.image_id);
-    if (!r) continue;
+    const imageId = normalizeImageId(row.image_id);
+    const r = reactionById(imageId) || reactionById("blush");
 
     const card = document.createElement("article");
     card.className = "post-card post-card-with-image";
@@ -73,8 +82,12 @@ function renderFeed(rows) {
 
     const img = document.createElement("img");
     img.className = "post-hamster";
-    img.src = r.src;
-    img.alt = r.label;
+    if (r) {
+      img.src = r.src;
+      img.alt = r.label;
+    } else {
+      img.alt = "Hamster";
+    }
 
     const body = document.createElement("p");
     body.className = "post-body";
