@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How do you feel — Shared board</title>
+    <title>New post — Hamster Mood</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,19 +14,20 @@
   </head>
   <body>
     <div class="layout">
-      <aside class="sidebar" aria-label="Share how you feel">
+      <aside class="sidebar" aria-label="Create a new post">
         <div id="config-warning" class="config-warning hidden" role="status"></div>
         <h1 class="sidebar-title">
           <span class="sidebar-title-line">How do you feel</span>
           <span class="sidebar-title-line">right now?</span>
         </h1>
-        <label for="feel-input" class="sidebar-label">Your response</label>
+        <div id="reaction-picker" class="reaction-grid"></div>
+        <label for="feel-input" class="sidebar-label">Your message</label>
         <textarea
           id="feel-input"
           class="sidebar-textarea"
-          rows="6"
+          rows="5"
           maxlength="500"
-          placeholder="Write how you’re feeling…"
+          placeholder="Type something to go with your hamster…"
         ></textarea>
         <div class="sidebar-footer">
           <button type="button" class="btn-post" id="btn-post">POST</button>
@@ -34,8 +35,13 @@
       </aside>
 
       <main class="main-panel">
-        <p id="board-status" class="board-status board-status-bar"></p>
-        <div id="feed" class="feed" aria-live="polite"></div>
+        <div class="preview-stage" aria-live="polite">
+          <p id="preview-placeholder" class="preview-placeholder">Pick a hamster</p>
+          <img id="main-preview-img" class="main-preview-img hidden" alt="" width="280" height="280" />
+        </div>
+        <div class="right-hint">
+          After you tap <span class="kbd">POST</span>, you’ll be taken to the shared billboard.
+        </div>
       </main>
     </div>
 
@@ -50,6 +56,6 @@
       </div>
     </div>
 
-    <script type="module" src="./src/main.js"></script>
+    <script type="module" src="./src/compose.js"></script>
   </body>
 </html>

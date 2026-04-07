@@ -1,19 +1,28 @@
 -- Run in Supabase: SQL Editor → New query → paste → Run
 
--- New project: text-only shared posts
+-- Hamster + text posts
 create table if not exists public.billboard_posts (
   id uuid primary key default gen_random_uuid(),
+  image_id text not null,
   content text not null,
   created_at timestamptz not null default now()
 );
 
--- Upgrading from hamster / stamp versions (image_id, x, y):
+-- Upgrading from older versions (text-only or stamp board):
+alter table public.billboard_posts add column if not exists image_id text;
 alter table public.billboard_posts add column if not exists content text;
+
 update public.billboard_posts
-set content = coalesce(nullif(btrim(content), ''), '(earlier post)')
+set image_id = coalesce(nullif(btrim(image_id), ''), 'blush')
+where image_id is null or btrim(image_id) = '';
+
+update public.billboard_posts
+set content = coalesce(nullif(btrim(content), ''), '(no message)')
 where content is null or btrim(content) = '';
+
+alter table public.billboard_posts alter column image_id set not null;
 alter table public.billboard_posts alter column content set not null;
-alter table public.billboard_posts drop column if exists image_id;
+
 alter table public.billboard_posts drop column if exists x;
 alter table public.billboard_posts drop column if exists y;
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Billboard — Hamster Mood</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/hamster-mood/assets/billboard-DYpzcSy1.js"></script>
+    <link rel="modulepreload" crossorigin href="/hamster-mood/assets/reactions-D7DilVvL.js">
+    <link rel="stylesheet" crossorigin href="/hamster-mood/assets/reactions-BniU06i5.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" aria-label="About this board">
+        <div id="config-warning" class="config-warning hidden" role="status"></div>
+        <h1 class="sidebar-title">
+          <span class="sidebar-title-line">Hamster Mood</span>
+          <span class="sidebar-title-line">Billboard</span>
+        </h1>
+        <p class="sidebar-copy">
+          Everyone’s posts show up here. Tap <span class="kbd">New post</span> to add yours.
+        </p>
+        <div class="sidebar-footer">
+          <a class="btn-post btn-link" id="btn-new-post" href="./index.html">NEW POST</a>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <p id="board-status" class="board-status board-status-bar"></p>
+        <div id="feed" class="feed" aria-live="polite"></div>
+        <div class="bottom-bar">
+          <a class="btn-post btn-link" href="./index.html">NEW POST</a>
+        </div>
+      </main>
+    </div>
+
+  </body>
+</html>
+
