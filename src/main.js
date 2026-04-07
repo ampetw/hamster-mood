@@ -5,35 +5,19 @@ function publicUrl(path) {
   return `${import.meta.env.BASE_URL}${p}`;
 }
 
-const REACTIONS = [
-  { id: "laughing", file: "laughing.png", label: "Laughing with tears" },
-  { id: "grin", file: "grin.png", label: "Big grin" },
-  { id: "tired", file: "tired.png", label: "Sad" },
-  { id: "angry", file: "angry.png", label: "Screaming" },
-  { id: "uh-oh", file: "uh-oh.png", label: "Tongue out" },
-  { id: "game", file: "game.png", label: "Distressed" },
-  { id: "blush", file: "blush.png", label: "Blushing" },
-].map(({ file, ...r }) => ({ ...r, src: publicUrl(`hamsters/${file}`) }));
-
 let supabase = null;
-
-let selectedImageId = null;
 let selectedPostId = null;
-let pickerButtons = [];
 
 const els = {
-  picker: document.getElementById("reaction-picker"),
-  board: document.getElementById("board"),
+  feed: document.getElementById("feed"),
   boardStatus: document.getElementById("board-status"),
   configWarning: document.getElementById("config-warning"),
+  feelInput: document.getElementById("feel-input"),
+  btnPost: document.getElementById("btn-post"),
   postOverlay: document.getElementById("post-overlay"),
   postKeep: document.getElementById("post-keep"),
   postDelete: document.getElementById("post-delete"),
 };
-
-function reactionById(id) {
-  return REACTIONS.find((r) => r.id === id);
-}
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -79,49 +63,6 @@ async function initSupabase() {
   }
 }
 
-function boardRelativePointFromEvent(evt) {
-  const rect = els.board.getBoundingClientRect();
-  const x = (evt.clientX - rect.left) / rect.width;
-  const y = (evt.clientY - rect.top) / rect.height;
-  return {
-    x: Math.min(0.99, Math.max(0.01, x)),
-    y: Math.min(0.99, Math.max(0.01, y)),
-  };
-}
-
-function setPickerSelection(imageId) {
-  for (const btn of pickerButtons) {
-    const isSelected = btn.dataset.imageId === imageId;
-    btn.classList.toggle("is-selected", isSelected);
-    btn.setAttribute("aria-pressed", String(isSelected));
-  }
-}
-
-function selectReaction(imageId) {
-  selectedImageId = imageId;
-  setPickerSelection(imageId);
-}
-
-function renderPicker() {
-  els.picker.innerHTML = "";
-  pickerButtons = [];
-  for (const r of REACTIONS) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "reaction-btn";
-    btn.setAttribute("aria-label", `Select reaction: ${r.label}`);
-    btn.setAttribute("aria-pressed", "false");
-    btn.dataset.imageId = r.id;
-    const img = document.createElement("img");
-    img.src = r.src;
-    img.alt = r.label;
-    btn.appendChild(img);
-    btn.addEventListener("click", () => selectReaction(r.id));
-    els.picker.appendChild(btn);
-    pickerButtons.push(btn);
-  }
-}
-
 function openPostActions(postId) {
   if (!supabase) return;
   selectedPostId = postId;
@@ -139,35 +80,22 @@ async function submitPost() {
     showConfigWarning();
     return;
   }
-  if (!selectedImageId) {
-    els.boardStatus.textContent = "Pick a hamster first.";
+  const content = els.feelInput.value.trim();
+  if (!content) {
+    els.boardStatus.textContent = "Write something first.";
     return;
   }
-  els.boardStatus.textContent = "Click the board to place it.";
-}
-
-async function placeStamp(evt) {
-  if (!supabase) {
-    showConfigWarning();
-    return;
-  }
-  if (!selectedImageId) {
-    els.boardStatus.textContent = "Pick a hamster first.";
-    return;
-  }
-
-  const { x, y } = boardRelativePointFromEvent(evt);
-  els.boardStatus.textContent = "Stamping…";
-  const { error } = await supabase.from("billboard_posts").insert({
-    image_id: selectedImageId,
-    x,
-    y,
-  });
+  els.btnPost.disabled = true;
+  els.boardStatus.textContent = "Posting…";
+  const { error } = await supabase.from("billboard_posts").insert({ content });
+  els.btnPost.disabled = false;
   if (error) {
-    els.boardStatus.textContent = `Could not stamp: ${error.message}`;
+    els.boardStatus.textContent = `Could not post: ${error.message}`;
     return;
   }
-  els.boardStatus.textContent = "Stamped.";
+  els.feelInput.value = "";
+  els.boardStatus.textContent = "Posted.";
+  await loadPosts();
 }
 
 async function deleteSelectedPost() {
@@ -184,56 +112,52 @@ async function deleteSelectedPost() {
   await loadPosts();
 }
 
-function renderStamps(rows) {
-  els.board.innerHTML = "";
-
+function renderFeed(rows) {
+  els.feed.innerHTML = "";
+  if (!rows.length) {
+    const p = document.createElement("p");
+    p.className = "feed-empty";
+    p.textContent = "No posts yet — be the first to share how you feel.";
+    els.feed.appendChild(p);
+    return;
+  }
   for (const row of rows) {
-    const r = reactionById(row.image_id);
-    if (!r) continue;
-
-    const wrap = document.createElement("div");
-    wrap.className = "stamp";
-    wrap.style.left = `${Math.round((row.x ?? 0.5) * 10000) / 100}%`;
-    wrap.style.top = `${Math.round((row.y ?? 0.5) * 10000) / 100}%`;
-
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.setAttribute("aria-label", `Stamp: ${r.label} at ${formatDate(row.created_at)}`);
-    btn.dataset.postId = row.id;
-
-    const img = document.createElement("img");
-    img.src = r.src;
-    img.alt = r.label;
-
-    const dateEl = document.createElement("div");
-    dateEl.className = "stamp-date";
-    dateEl.textContent = formatDate(row.created_at);
-
-    btn.appendChild(img);
-    wrap.append(btn, dateEl);
-
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openPostActions(row.id);
+    const card = document.createElement("article");
+    card.className = "post-card";
+    card.tabIndex = 0;
+    card.dataset.postId = row.id;
+    const body = document.createElement("p");
+    body.className = "post-body";
+    body.textContent = row.content || "";
+    const meta = document.createElement("p");
+    meta.className = "post-meta";
+    meta.textContent = formatDate(row.created_at);
+    card.append(body, meta);
+    const open = () => openPostActions(row.id);
+    card.addEventListener("click", open);
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        open();
+      }
     });
-
-    els.board.appendChild(wrap);
+    els.feed.appendChild(card);
   }
 }
 
 async function loadPosts() {
   if (!supabase) return;
-  els.boardStatus.textContent = "Loading board…";
+  els.boardStatus.textContent = "Loading…";
   const { data, error } = await supabase
     .from("billboard_posts")
-    .select("id, image_id, x, y, created_at")
-    .order("created_at", { ascending: true });
+    .select("id, content, created_at")
+    .order("created_at", { ascending: false });
   if (error) {
     els.boardStatus.textContent = `Could not load: ${error.message}`;
     return;
   }
-  els.boardStatus.textContent = `${data.length} stamp${data.length === 1 ? "" : "s"} — click to stamp, click a stamp to delete`;
-  renderStamps(data);
+  els.boardStatus.textContent = `${data.length} shared post${data.length === 1 ? "" : "s"} — tap a post to delete`;
+  renderFeed(data);
 }
 
 function subscribeRealtime() {
@@ -255,6 +179,7 @@ function subscribeRealtime() {
   };
 }
 
+els.btnPost.addEventListener("click", submitPost);
 els.postKeep.addEventListener("click", closePostActions);
 els.postDelete.addEventListener("click", deleteSelectedPost);
 els.postOverlay.addEventListener("click", (e) => {
@@ -265,9 +190,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closePostActions();
 });
 
-renderPicker();
-els.board.addEventListener("click", placeStamp);
-
+els.btnPost.disabled = true;
 els.boardStatus.textContent = "Loading…";
 
 (async () => {
@@ -280,7 +203,8 @@ els.boardStatus.textContent = "Loading…";
   }
 
   els.configWarning.classList.add("hidden");
-  els.boardStatus.textContent = "Pick a hamster, then click the board to stamp it.";
+  els.btnPost.disabled = false;
+  els.boardStatus.textContent = "Write how you feel, then tap POST.";
   loadPosts();
   subscribeRealtime();
 })();

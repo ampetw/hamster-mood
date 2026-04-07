@@ -1,12 +1,12 @@
-# Hamster Mood — Shared Hamster Board
+# How do you feel — Shared board
 
-A pink-themed **shared board** (like a tiny FigJam): visitors pick a hamster reaction and **stamp it onto the board**. Everyone sees stamps update in near real time. Click a stamp to **keep** it or **delete** it for all users.
+A pink-themed **shared wall**: visitors answer *How do you feel right now?* in a text box and tap **POST**. Everyone sees posts on the light-pink panel in near real time. Tap a post to **keep** or **delete** it for all users.
 
 ## Run locally
 
 1. **Create a Supabase project** (free): [supabase.com](https://supabase.com)
 
-2. **Database**: In the Supabase dashboard, open **SQL Editor**, paste the contents of [`supabase/billboard_posts.sql`](supabase/billboard_posts.sql), and run it. That creates the `billboard_posts` table (with `x`/`y` stamp positions), open read/write/delete policies for this demo, and registers the table for Realtime.
+2. **Database**: In the Supabase dashboard, open **SQL Editor**, paste the contents of [`supabase/billboard_posts.sql`](supabase/billboard_posts.sql), and run it. That creates the `billboard_posts` table (`content` + `created_at`), open read/write/delete policies, and registers the table for Realtime.
 
 3. **API keys**: Project **Settings → API**. Copy the project URL and the `anon` `public` key.
 
@@ -28,32 +28,16 @@ A pink-themed **shared board** (like a tiny FigJam): visitors pick a hamster rea
 
 This project builds into the **`docs/`** folder (`vite.config.js` → `build.outDir`).
 
-**GitHub Pages:** In the repo on GitHub, go to **Settings → Pages**. Under **Build and deployment**, set **Source** to **Deploy from a branch**, choose **`main`**, folder **`/docs`**, then save. The site URL will look like `https://<user>.github.io/hamster-mood/`.
+**GitHub Pages:** **Settings → Pages** → **Deploy from a branch** → **`main`** → folder **`/docs`**.
 
-After you change the app, run `npm run build` again and **commit the updated `docs/`** folder so Pages picks up changes.
+After you change the app, run `npm run build` and **commit the updated `docs/`** folder.
 
-### Make POST work on GitHub Pages (no secrets needed)
+### POST on GitHub Pages
 
-GitHub Pages can’t provide Vite build-time env vars, so the deployed site reads Supabase keys from a file.
+Edit **`docs/runtime-config.json`** with your **Project URL** and **anon public** key, then commit.
 
-1. In your GitHub repo, edit **`docs/runtime-config.json`** and set:
-   - `supabaseUrl`
-   - `supabaseAnonKey` (the public anon key)
-
-2. Commit the change on GitHub.
-
-The site will then enable **POST** and everyone will see updates.
-
-Local dev can still use `.env` (`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`).
-
-**If the site loads but hamsters and clicks do nothing:** GitHub Pages often serves `…/hamster-mood` without a trailing slash; relative asset URLs then break. This repo’s production build uses **`base: /hamster-mood/`** in `vite.config.js` so scripts and images load. If you **rename the GitHub repo**, update the `REPO_NAME` constant there to match.
-
-Other hosts can upload the contents of **`docs/`** (or change `outDir` and `base` if you prefer).
+**If scripts don’t load:** the production build uses **`base: /hamster-mood/`** in `vite.config.js`. If you **rename the repo**, update **`REPO_NAME`** there.
 
 ## Security note
 
-Row level security allows **anyone** to insert and delete posts. That matches a public “wall” demo. For a production app, add auth and tighten policies.
-
-## Assets
-
-Reaction images live in `public/hamsters/`. Replace PNGs there if you want different art; keep filenames or update the `REACTIONS` list in `src/main.js`.
+Row level security allows **anyone** to insert and delete posts. That matches a public demo wall.

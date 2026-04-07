@@ -3,42 +3,47 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hamster Mood — Digital Billboard</title>
+    <title>How do you feel — Shared board</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap"
       rel="stylesheet"
     />
-    <script type="module" crossorigin src="/hamster-mood/assets/index-B_foumDr.js"></script>
-    <link rel="stylesheet" crossorigin href="/hamster-mood/assets/index-BZGsFL64.css">
+    <script type="module" crossorigin src="/hamster-mood/assets/index-DxsvWErX.js"></script>
+    <link rel="stylesheet" crossorigin href="/hamster-mood/assets/index-CG84uyDJ.css">
   </head>
   <body>
     <div class="layout">
-      <aside class="sidebar" aria-label="Pick your mood">
+      <aside class="sidebar" aria-label="Share how you feel">
         <div id="config-warning" class="config-warning hidden" role="status"></div>
         <h1 class="sidebar-title">
           <span class="sidebar-title-line">How do you feel</span>
           <span class="sidebar-title-line">right now?</span>
         </h1>
-        <div id="reaction-picker" class="reaction-grid"></div>
+        <label for="feel-input" class="sidebar-label">Your response</label>
+        <textarea
+          id="feel-input"
+          class="sidebar-textarea"
+          rows="6"
+          maxlength="500"
+          placeholder="Write how you’re feeling…"
+        ></textarea>
         <div class="sidebar-footer">
-          <div class="sidebar-hint" id="sidebar-hint">Pick a hamster, then click the board to stamp it.</div>
+          <button type="button" class="btn-post" id="btn-post">POST</button>
         </div>
       </aside>
 
       <main class="main-panel">
-        <section class="board-wrap" aria-label="Shared hamster board">
-          <p id="board-status" class="board-status board-status-overlay"></p>
-          <div id="board" class="board" role="application" aria-label="Click to place the selected hamster"></div>
-        </section>
+        <p id="board-status" class="board-status board-status-bar"></p>
+        <div id="feed" class="feed" aria-live="polite"></div>
       </main>
     </div>
 
     <div id="post-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="post-action-title">
       <div class="modal post-modal">
         <h3 id="post-action-title" class="modal-title-pixel">This post</h3>
-        <p class="post-modal-copy">Delete it from the board for everyone, or keep it.</p>
+        <p class="post-modal-copy">Delete it for everyone, or keep it.</p>
         <div class="modal-actions">
           <button type="button" class="btn secondary" id="post-keep">Keep it</button>
           <button type="button" class="btn danger" id="post-delete">Delete</button>
