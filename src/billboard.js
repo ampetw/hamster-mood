@@ -28,6 +28,13 @@ function saveLocalPosts(posts) {
   localStorage.setItem("hamsterMoodPosts", JSON.stringify(posts));
 }
 
+function storageBlockedMessage() {
+  if (window.location.protocol === "file:") {
+    return "This page is opened as a file (<code>file://</code>). Use GitHub Pages or run <code>npm run dev</code>/<code>npm run preview</code> so <code>localStorage</code> works.";
+  }
+  return "Your browser is blocking <code>localStorage</code> (private browsing mode or strict settings). Enable site storage and refresh.";
+}
+
 function renderFeed(rows) {
   els.feed.innerHTML = "";
   if (!rows.length) {
@@ -95,9 +102,21 @@ function renderFeed(rows) {
 
 async function loadPosts() {
   els.boardStatus.textContent = "Loading…";
-  const posts = loadLocalPosts()
-    .slice()
-    .sort((a, b) => String(b?.created_at || "").localeCompare(String(a?.created_at || "")));
+  let posts = [];
+  try {
+    const k = "__hm_test__";
+    localStorage.setItem(k, "1");
+    localStorage.removeItem(k);
+    posts = loadLocalPosts()
+      .slice()
+      .sort((a, b) => String(b?.created_at || "").localeCompare(String(a?.created_at || "")));
+  } catch {
+    els.configWarning.classList.remove("hidden");
+    els.configWarning.innerHTML = `<strong>Storage disabled</strong><br />${storageBlockedMessage()}`;
+    els.boardStatus.textContent = "0 posts";
+    renderFeed([]);
+    return;
+  }
   els.boardStatus.textContent = `${posts.length} post${posts.length === 1 ? "" : "s"} — tap a post to delete`;
   renderFeed(posts);
 }

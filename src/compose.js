@@ -26,6 +26,26 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
+function ensureStorageWorks() {
+  if (window.location.protocol === "file:") {
+    showPostError(
+      "This page is opened as a <code>file://</code> URL. Browsers often block or isolate <code>localStorage</code> there.<br /><br />Open the site from a web server instead (GitHub Pages URL or <code>npm run dev</code>/<code>npm run preview</code>).",
+    );
+    return false;
+  }
+  try {
+    const k = "__hm_test__";
+    localStorage.setItem(k, "1");
+    localStorage.removeItem(k);
+    return true;
+  } catch {
+    showPostError(
+      "Your browser is blocking <code>localStorage</code> (often due to private browsing mode or strict settings). Turn on site storage for this page and try again.",
+    );
+    return false;
+  }
+}
+
 function setPickerSelection(imageId) {
   for (const btn of pickerButtons) {
     const isSelected = btn.dataset.imageId === imageId;
@@ -78,6 +98,7 @@ async function submitPost() {
   if (!selectedImageId) return;
   const content = els.feelInput.value.trim();
   if (!content) return;
+  if (!ensureStorageWorks()) return;
 
   els.btnPost.disabled = true;
   try {
