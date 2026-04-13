@@ -1,16 +1,9 @@
-import { getSupabase } from "./supabaseClient.js";
 import { reactionById } from "./reactions.js";
-
-let supabase = null;
-let selectedPostId = null;
 
 const els = {
   feed: document.getElementById("feed"),
   boardStatus: document.getElementById("board-status"),
   configWarning: document.getElementById("config-warning"),
-  postOverlay: document.getElementById("post-overlay"),
-  postKeep: document.getElementById("post-keep"),
-  postDelete: document.getElementById("post-delete"),
 };
 
 function formatDate(iso) {
@@ -21,35 +14,18 @@ function formatDate(iso) {
   });
 }
 
-function showConfigWarning() {
-  els.configWarning.classList.remove("hidden");
-  els.configWarning.innerHTML =
-    "<strong>Connect Supabase</strong> so posts sync for everyone. Add your keys to <code>docs/runtime-config.json</code> on GitHub Pages (or use a local <code>.env</code>).";
-}
-
-function openPostActions(postId) {
-  if (!supabase) return;
-  selectedPostId = postId;
-  els.postOverlay.classList.remove("hidden");
-  els.postKeep.focus();
-}
-
-function closePostActions() {
-  els.postOverlay.classList.add("hidden");
-  selectedPostId = null;
-}
-
-async function deleteSelectedPost() {
-  if (!supabase || !selectedPostId) return;
-  els.postDelete.disabled = true;
-  const { error } = await supabase.from("billboard_posts").delete().eq("id", selectedPostId);
-  els.postDelete.disabled = false;
-  if (error) {
-    closePostActions();
-    return;
+function loadLocalPosts() {
+  try {
+    const raw = localStorage.getItem("hamsterMoodPosts");
+    const posts = raw ? JSON.parse(raw) : [];
+    return Array.isArray(posts) ? posts : [];
+  } catch {
+    return [];
   }
-  closePostActions();
-  await loadPosts();
+}
+
+function saveLocalPosts(posts) {
+  localStorage.setItem("hamsterMoodPosts", JSON.stringify(posts));
 }
 
 function renderFeed(rows) {
@@ -99,12 +75,18 @@ function renderFeed(rows) {
 
     card.append(img, body, meta);
 
-    const open = () => openPostActions(row.id);
-    card.addEventListener("click", open);
+    card.addEventListener("click", () => {
+      const ok = window.confirm("Delete this post?");
+      if (!ok) return;
+      const posts = loadLocalPosts();
+      const next = posts.filter((p) => p?.id !== row.id);
+      saveLocalPosts(next);
+      loadPosts();
+    });
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        open();
+        card.click();
       }
     });
     els.feed.appendChild(card);
@@ -112,59 +94,15 @@ function renderFeed(rows) {
 }
 
 async function loadPosts() {
-  if (!supabase) return;
   els.boardStatus.textContent = "Loading…";
-  const { data, error } = await supabase
-    .from("billboard_posts")
-    .select("id, image_id, content, created_at")
-    .order("created_at", { ascending: false });
-  if (error) {
-    els.boardStatus.textContent = `Could not load: ${error.message}`;
-    return;
-  }
-  els.boardStatus.textContent = `${data.length} post${data.length === 1 ? "" : "s"} — tap a post to delete`;
-  renderFeed(data);
+  const posts = loadLocalPosts()
+    .slice()
+    .sort((a, b) => String(b?.created_at || "").localeCompare(String(a?.created_at || "")));
+  els.boardStatus.textContent = `${posts.length} post${posts.length === 1 ? "" : "s"} — tap a post to delete`;
+  renderFeed(posts);
 }
-
-function subscribeRealtime() {
-  if (!supabase) return;
-  const channel = supabase
-    .channel("billboard_posts_changes")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "billboard_posts" },
-      () => {
-        loadPosts();
-      },
-    )
-    .subscribe();
-  const poll = window.setInterval(() => loadPosts(), 12000);
-  return () => {
-    window.clearInterval(poll);
-    supabase.removeChannel(channel);
-  };
-}
-
-els.postKeep.addEventListener("click", closePostActions);
-els.postDelete.addEventListener("click", deleteSelectedPost);
-els.postOverlay.addEventListener("click", (e) => {
-  if (e.target === els.postOverlay) closePostActions();
-});
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closePostActions();
-});
 
 els.boardStatus.textContent = "Loading…";
 
-(async () => {
-  supabase = await getSupabase();
-  if (!supabase) {
-    showConfigWarning();
-    els.boardStatus.textContent = "Billboard is offline until Supabase is configured.";
-    return;
-  }
-  els.configWarning.classList.add("hidden");
-  loadPosts();
-  subscribeRealtime();
-})();
+els.configWarning.classList.add("hidden");
+loadPosts();
